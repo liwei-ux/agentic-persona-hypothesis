@@ -15,10 +15,10 @@
     }
     body { background: #F8FAFC; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
     .node { transition: all 0.4s ease; }
-    .node.dimmed { opacity: 0.2; pointer-events: none; }
+    .node.dimmed { opacity: 0.15; pointer-events: none; }
     .conn { transition: opacity 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    .fade-in { animation: fadeIn 0.25s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(2px); } to { opacity: 1; transform: translateY(0); } }
+    .fade-in { animation: fadeIn 0.2s ease-out; }
   </style>
 </head>
 <body>
@@ -35,11 +35,11 @@
 
       // === LAYOUT CONSTANTS ===
       const svgW = 1000;
-      const svgH = isAgentic ? 330 : 360;
+      const svgH = isAgentic ? 360 : 360;
 
-      // Layer Y positions
+      // Layer Y positions — more vertical breathing room in agentic
       const lySlg = { pricing: 75, operations: 155, infrastructure: 235, customer: 315 };
-      const lyAg = { judgment: 85, agents: 200, customer: 295 };
+      const lyAg = { judgment: 100, agents: 225, customer: 315 };
 
       // === PERSONAS ===
       const P = {
@@ -51,7 +51,7 @@
         caroline:{ name: 'Caroline', role: 'Customer', color: '#0D9488' },
       };
 
-      // Positions per mode
+      // Positions per mode — agentic has more considered spacing
       const pos = {
         slg: {
           peter:    { x: 170,  y: lySlg.pricing },
@@ -70,31 +70,27 @@
           caroline: { x: 940,  y: lySlg.customer },
         },
         agentic: {
-          peter:    { x: 140,  y: lyAg.judgment, sub: 'Strategist' },
-          diana:    { x: 260,  y: lyAg.judgment, sub: 'Data Arch.' },
-          emily:    { x: 375,  y: lyAg.judgment, sub: 'Architect' },
-          fred:     { x: 490,  y: lyAg.judgment, sub: 'Policy' },
+          peter:    { x: 155,  y: lyAg.judgment, sub: 'Strategist' },
+          diana:    { x: 275,  y: lyAg.judgment, sub: 'Data Arch.' },
+          emily:    { x: 390,  y: lyAg.judgment, sub: 'Q2C Architect' },
+          fred:     { x: 510,  y: lyAg.judgment, sub: 'Policy' },
           oliver:   { x: 0, y: 0, hidden: true },
-          caroline: { x: 790,  y: lyAg.customer },
+          caroline: { x: 810,  y: lyAg.customer },
         },
       };
 
-      // Agent nodes (agentic mode only)
+      // Agent nodes — evenly spaced with wider boxes
+      const agentHalfW = 62;
+      const agentHalfH = 18;
       const agents = isAgentic ? [
         { id: 'a-model',     name: 'Revenue Modeling',  x: 140,  y: lyAg.agents },
         { id: 'a-implement', name: 'Implementation',    x: 320,  y: lyAg.agents },
         { id: 'a-validate',  name: 'Validation',        x: 490,  y: lyAg.agents },
         { id: 'a-contract',  name: 'Contract Config',   x: 700,  y: lyAg.agents },
-        { id: 'a-reconcile', name: 'Reconciliation',    x: 860,  y: lyAg.agents },
+        { id: 'a-reconcile', name: 'Reconciliation',    x: 880,  y: lyAg.agents },
       ] : [];
 
       // === CONNECTIONS ===
-      // Agentic connections use semantic types:
-      //   'direct'      — Active direction, required every time (Peter triggers the flow)
-      //   'policy'      — Guardrails defined once, agents enforce continuously (Fred's rules)
-      //   'conditional'  — Human joins only when complexity requires it (Emily, Diana)
-      //   'chain'       — Agent-to-agent flow, the operational spine
-      //   'feedback'    — Agent escalates to human, learning loop
       const conns = {
         slg: [
           { from: 'peter',  to: 'diana',    label: 'Usage data' },
@@ -117,21 +113,21 @@
           { from: 'fred',   to: 'emily',    label: 'Reconciliation' },
         ],
         agentic: [
-          // Type A: Active direction (always visible, persona-colored)
+          // Active direction — Peter triggers the flow
           { from: 'peter', to: 'a-model', type: 'direct', label: 'Directs' },
 
-          // Type B: Policy guardrails (teal accent on agent, connections on hover)
+          // Policy guardrails — Fred's rules, enforced continuously
           { from: 'fred',  to: 'a-model',     type: 'policy', label: 'RevRec rules' },
           { from: 'fred',  to: 'a-implement',  type: 'policy', label: 'RevRec constraints' },
           { from: 'fred',  to: 'a-contract',   type: 'policy', label: 'Policy boundaries' },
           { from: 'fred',  to: 'a-reconcile',  type: 'policy', label: 'Defines "correct"' },
 
-          // Type C: Conditional review (invisible by default, connections on hover)
-          { from: 'emily', to: 'a-implement',  type: 'conditional', label: 'Reviews (complex)' },
+          // Conditional review — joins only when novel architecture needed
+          { from: 'emily', to: 'a-implement',  type: 'conditional', label: 'Reviews novel constructs' },
           { from: 'emily', to: 'a-validate',   type: 'conditional', label: 'Discrepancy review' },
           { from: 'diana', to: 'a-model',      type: 'conditional', label: 'New metrics' },
 
-          // Agent chain — the operational spine, always prominent
+          // Agent chain — the operational spine
           { from: 'a-model',     to: 'a-implement', type: 'chain' },
           { from: 'a-implement', to: 'a-validate',  type: 'chain' },
           { from: 'a-validate',  to: 'a-contract',  type: 'chain' },
@@ -139,7 +135,7 @@
           // Agent to Customer
           { from: 'a-contract',  to: 'caroline', type: 'chain', label: 'Invoice' },
 
-          // Feedback / escalation loop (visible at moderate opacity)
+          // Feedback loop
           { from: 'a-reconcile', to: 'fred', type: 'feedback', label: 'Anomaly alerts' },
         ],
       };
@@ -147,7 +143,7 @@
       const curConns = conns[mode] || conns.slg;
       const curPos = pos[mode] || pos.slg;
 
-      // Compute which agents are policy-governed (for teal accent stripe)
+      // Policy-governed agents (for teal accent stripe)
       const policyAgents = useMemo(() => {
         if (!isAgentic) return new Set();
         const s = new Set();
@@ -160,8 +156,8 @@
       // === ZONES ===
       const zones = isAgentic
         ? [
-            { label: 'Design & Validate', x: 55, w: 510, color: '#EEF2FF', border: '#C7D2FE', desc: 'Human-directed, agent-executed' },
-            { label: 'Operate & Monitor', x: 620, w: 355, color: '#F5F3EF', border: '#D6CFC5', desc: 'Agent-driven, human-supervised' },
+            { label: 'Design & Validate', x: 55, w: 530, color: '#EEF2FF', border: '#C7D2FE', desc: 'Human-directed, agent-executed' },
+            { label: 'Operate & Monitor', x: 625, w: 350, color: '#F5F3EF', border: '#D6CFC5', desc: 'Agent-driven, human-supervised' },
           ]
         : [
             { label: 'Strategy & Impact', x: 80, w: 200 },
@@ -192,10 +188,8 @@
 
       const isLit = (id) => !connected || connected.has(id);
 
-      // === RENDER ===
-      const personaR = isAgentic ? 27 : 24;
-      const agentHalfW = 52;
-      const agentHalfH = 17;
+      // === RENDER HELPERS ===
+      const personaR = isAgentic ? 28 : 24;
 
       const PersonaNode = ({ id }) => {
         const p = P[id];
@@ -211,14 +205,21 @@
           );
         }
         const lit = isLit(id);
+        // Subtle fill for better visual weight
+        const fillColor = isAgentic ? (id === 'caroline' ? '#F0FDFA' : '#FAFAFF') : 'white';
         return (
           <g className={`node ${lit ? '' : 'dimmed'}`}
              onMouseEnter={() => setHovered(id)} onMouseLeave={() => setHovered(null)}
              style={{ cursor: 'pointer' }}>
-            <circle cx={cfg.x} cy={cfg.y} r={personaR} fill="white" stroke={p.color} strokeWidth="2.5" />
-            <text x={cfg.x} y={cfg.y + (cfg.sub ? -6 : -1)} textAnchor="middle" fontSize="11" fill={p.color} fontWeight="700">{p.name}</text>
-            <text x={cfg.x} y={cfg.y + (cfg.sub ? 5 : 10)} textAnchor="middle" fontSize="8" fill="#94A3B8">{p.role}</text>
-            {cfg.sub && <text x={cfg.x} y={cfg.y + 16} textAnchor="middle" fontSize="8.5" fill={p.color} fontWeight="500" fontStyle="italic">{cfg.sub}</text>}
+            <circle cx={cfg.x} cy={cfg.y} r={personaR} fill={fillColor} stroke={p.color} strokeWidth="2" />
+            {/* Name */}
+            <text x={cfg.x} y={cfg.y + (cfg.sub ? -7 : -1)} textAnchor="middle" fontSize="11.5" fill={p.color} fontWeight="700">{p.name}</text>
+            {/* Functional role */}
+            <text x={cfg.x} y={cfg.y + (cfg.sub ? 4 : 10)} textAnchor="middle" fontSize="8" fill="#94A3B8" fontWeight="500">{p.role}</text>
+            {/* Sub-label: judgment type */}
+            {cfg.sub && (
+              <text x={cfg.x} y={cfg.y + 17} textAnchor="middle" fontSize="8" fill={p.color} fontWeight="600" opacity="0.7">{cfg.sub}</text>
+            )}
           </g>
         );
       };
@@ -226,16 +227,18 @@
       const AgentNode = ({ a }) => {
         const lit = isLit(a.id);
         const hasPolicy = policyAgents.has(a.id);
+        const w = agentHalfW * 2;
+        const h = agentHalfH * 2;
         return (
           <g className={`node ${lit ? '' : 'dimmed'}`}
              onMouseEnter={() => setHovered(a.id)} onMouseLeave={() => setHovered(null)}
              style={{ cursor: 'pointer' }}>
-            <rect x={a.x - agentHalfW} y={a.y - agentHalfH} width={agentHalfW * 2} height={agentHalfH * 2} rx="6"
-                  fill="#FAFAF8" stroke="#B8A88A" strokeWidth="1.5" />
-            {/* Policy accent: teal left stripe for agents governed by Fred's rules */}
+            <rect x={a.x - agentHalfW} y={a.y - agentHalfH} width={w} height={h} rx="7"
+                  fill="#FAFAF8" stroke="#C4B697" strokeWidth="1.2" />
+            {/* Policy accent: teal left stripe */}
             {hasPolicy && (
-              <rect x={a.x - agentHalfW + 1} y={a.y - agentHalfH + 3} width="3" height={agentHalfH * 2 - 6}
-                    rx="1" fill="#0D9488" opacity="0.75" />
+              <rect x={a.x - agentHalfW + 1.5} y={a.y - agentHalfH + 4} width="3" height={h - 8}
+                    rx="1.5" fill="#0D9488" opacity="0.65" />
             )}
             <text x={a.x} y={a.y + 4} textAnchor="middle" fontSize="10.5" fill="#5C4B32" fontWeight="600">{a.name}</text>
           </g>
@@ -255,78 +258,109 @@
         const isFriction = c.friction;
         const isConnected = isLit(c.from) && isLit(c.to);
 
-        // --- Opacity logic per connection type ---
+        // Opacity logic per connection type
         let opacity = 1;
         if (hovered) {
-          // Something hovered: connected = full, else nearly invisible
-          opacity = isConnected ? 1 : 0.1;
+          opacity = isConnected ? 1 : 0.06;
         } else if (isAgentic) {
-          // Default state — layered visibility:
-          if (isDirect) opacity = 1;           // Peter's trigger: always visible
-          else if (isChain) opacity = 1;       // Agent spine: always visible
-          else if (isFeedback) opacity = 0.45; // Feedback loop: moderate
-          else if (isPolicy) opacity = 0;      // Policy: invisible (accent stripe hints)
-          else if (isConditional) opacity = 0;  // Conditional: invisible
+          if (isDirect) opacity = 1;
+          else if (isChain) opacity = 1;
+          else if (isFeedback) opacity = 0.4;
+          else if (isPolicy) opacity = 0;
+          else if (isConditional) opacity = 0;
         }
 
         const dx = tp.x - fp.x;
         const dy = tp.y - fp.y;
         const len = Math.sqrt(dx * dx + dy * dy) || 1;
 
-        // Offset from node edge
-        const r1 = c.from.startsWith('a-') ? agentHalfW : personaR;
-        const r2 = c.to.startsWith('a-') ? agentHalfW : personaR;
-        const sx = fp.x + (dx / len) * r1;
-        const sy = fp.y + (dy / len) * r1;
-        const ex = tp.x - (dx / len) * r2;
-        const ey = tp.y - (dy / len) * r2;
+        // Offset from node edge — use proper edge calc for rects
+        const fromIsAgent = c.from.startsWith('a-');
+        const toIsAgent = c.to.startsWith('a-');
 
-        // Curve
+        let sx, sy, ex, ey;
+
+        // Start point
+        if (fromIsAgent) {
+          // Exit from rect edge
+          const angle = Math.atan2(dy, dx);
+          const absC = Math.abs(Math.cos(angle));
+          const absS = Math.abs(Math.sin(angle));
+          if (absC * agentHalfH > absS * agentHalfW) {
+            sx = fp.x + Math.sign(Math.cos(angle)) * agentHalfW;
+            sy = fp.y + Math.tan(angle) * Math.sign(Math.cos(angle)) * agentHalfW;
+          } else {
+            sx = fp.x + (1/Math.tan(angle)) * Math.sign(Math.sin(angle)) * agentHalfH;
+            sy = fp.y + Math.sign(Math.sin(angle)) * agentHalfH;
+          }
+        } else {
+          sx = fp.x + (dx / len) * personaR;
+          sy = fp.y + (dy / len) * personaR;
+        }
+
+        // End point
+        if (toIsAgent) {
+          const angle = Math.atan2(-dy, -dx);
+          const absC = Math.abs(Math.cos(angle));
+          const absS = Math.abs(Math.sin(angle));
+          if (absC * agentHalfH > absS * agentHalfW) {
+            ex = tp.x + Math.sign(Math.cos(angle)) * agentHalfW;
+            ey = tp.y + Math.tan(angle) * Math.sign(Math.cos(angle)) * agentHalfW;
+          } else {
+            ex = tp.x + (1/Math.tan(angle)) * Math.sign(Math.sin(angle)) * agentHalfH;
+            ey = tp.y + Math.sign(Math.sin(angle)) * agentHalfH;
+          }
+        } else {
+          ex = tp.x - (dx / len) * personaR;
+          ey = tp.y - (dy / len) * personaR;
+        }
+
+        // Curve calculation
         const mx = (sx + ex) / 2;
         const my = (sy + ey) / 2;
-        const px = -(ey - sy) / len;
-        const py = (ex - sx) / len;
+        const pLen = Math.sqrt((ex - sx) ** 2 + (ey - sy) ** 2) || 1;
+        const px = -(ey - sy) / pLen;
+        const py = (ex - sx) / pLen;
 
         let curve = 0;
         if (isFeedback) {
-          curve = 35;
-        } else if (Math.abs(dy) < 20) {
-          curve = 10 + (i % 3) * 5;
+          curve = 40;
+        } else if (isChain && !c.label && Math.abs(dy) < 20) {
+          // Horizontal chain: gentle arc
+          curve = 0;
         } else if (c.from === 'a-contract' && c.to === 'caroline') {
           curve = -15;
+        } else if (Math.abs(dy) < 20 && !isChain) {
+          curve = 12 + (i % 3) * 5;
         }
 
         const cpx = mx + px * curve;
         const cpy = my + py * curve;
-        const pathD = `M${sx},${sy} Q${cpx},${cpy} ${ex},${ey}`;
+        const pathD = curve === 0
+          ? `M${sx},${sy} L${ex},${ey}`
+          : `M${sx},${sy} Q${cpx},${cpy} ${ex},${ey}`;
 
-        // --- Stroke styling by type ---
-        // Each type gets its own visual language
+        // Stroke styling by type
         const fromColor = P[c.from] ? P[c.from].color : '#F59E0B';
         let stroke, dash, sw;
 
         if (isDirect) {
-          // Active direction: solid in Peter's purple
-          stroke = fromColor;  // #7C3AED
+          stroke = fromColor;
           dash = '';
           sw = 2;
         } else if (isPolicy) {
-          // Policy: teal, dashed — only visible on hover
           stroke = '#0D9488';
           dash = '4 3';
           sw = 1.5;
         } else if (isConditional) {
-          // Conditional: persona-colored, fine dash — only visible on hover
           stroke = fromColor;
           dash = '3 2';
           sw = 1.2;
         } else if (isChain) {
-          // Agent flow: warm bronze solid
           stroke = '#A38B5E';
           dash = '';
-          sw = 2.5;
+          sw = 2;
         } else if (isFeedback) {
-          // Feedback: teal dashed
           stroke = '#0D9488';
           dash = '5 3';
           sw = 1.5;
@@ -335,7 +369,6 @@
           dash = '';
           sw = 2;
         } else {
-          // SLG/PLG default
           stroke = '#CBD5E1';
           dash = '';
           sw = 1.2;
@@ -349,29 +382,34 @@
         else if (isChain) markerId = 'arr-a';
         else if (isConditional) markerId = 'arr-cond';
 
-        // Labels: chain always visible, others on hover
+        // Label visibility
         const showLabel = c.label && (
           (isChain && !hovered) ||
           (isDirect && !hovered) ||
           (hovered && isConnected)
         );
 
+        // Label position — offset based on connection type
+        const labelX = curve === 0 ? mx : cpx;
+        const labelY = curve === 0 ? my - 8 : cpy - 8;
+
         return (
           <g className="conn" style={{ opacity, transition: 'opacity 0.3s ease' }}>
             <path d={pathD} fill="none" stroke={stroke} strokeWidth={sw} strokeDasharray={dash}
                   markerEnd={`url(#${markerId})`} />
             {showLabel && (
-              <text x={cpx} y={cpy - 7} textAnchor="middle" fontSize="8.5"
+              <text x={labelX} y={labelY} textAnchor="middle" fontSize="8.5"
                     fill={
                       isFriction ? '#EF4444' :
                       isDirect ? '#6D28D9' :
                       isPolicy ? '#0D9488' :
                       isConditional ? '#64748B' :
-                      isChain ? '#6B5B3E' :
+                      isChain ? '#8B7355' :
                       isFeedback ? '#0D9488' :
                       '#94A3B8'
                     }
-                    fontWeight={(isDirect || isFriction) ? '600' : '400'}>
+                    fontWeight={(isDirect || isFriction) ? '600' : '400'}
+                    opacity={isDirect ? 0.8 : 0.7}>
                 {c.label}
               </text>
             )}
@@ -398,29 +436,31 @@
       return (
         <div className="max-w-4xl mx-auto py-8">
           {/* Header */}
-          <div className="px-4 mb-5">
-            <h1 className="text-lg font-bold text-gray-900">Pricing Change Journey Map</h1>
-            <p className="text-sm text-gray-500 mt-0.5">How a pricing change flows through the persona ecosystem</p>
+          <div className="px-5 mb-5">
+            <h1 className="text-lg font-bold text-gray-900 tracking-tight">Pricing Change Journey Map</h1>
+            <p className="text-sm text-gray-400 mt-0.5">How a pricing change flows through the persona ecosystem</p>
           </div>
 
           {/* Toggle */}
-          <div className="px-4 mb-4 flex items-center gap-2">
+          <div className="px-5 mb-5 flex items-center gap-1.5">
             {['slg', 'plg', 'agentic'].map(m => (
               <button key={m} onClick={() => { setMode(m); setHovered(null); }}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+                className={`px-3.5 py-1.5 rounded-md text-xs font-semibold tracking-wide transition-all ${
                   mode === m
-                    ? (m === 'agentic' ? 'bg-stone-100 text-stone-700 border border-stone-300' : 'bg-indigo-50 text-indigo-700 border border-indigo-200')
-                    : 'bg-gray-100 text-gray-500 border border-transparent hover:bg-gray-200'
+                    ? (m === 'agentic'
+                        ? 'bg-stone-100 text-stone-700 border border-stone-300 shadow-sm'
+                        : 'bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-sm')
+                    : 'bg-white text-gray-400 border border-gray-200 hover:bg-gray-50 hover:text-gray-500'
                 }`}>
                 {m === 'slg' ? 'SLG' : m === 'plg' ? 'PLG' : 'Agentic'}
               </button>
             ))}
-            {isAgentic && <span className="text-xs text-stone-500 ml-2 italic">Hypothesis</span>}
+            {isAgentic && <span className="text-xs text-stone-400 ml-2.5 italic tracking-wide">Hypothesis</span>}
           </div>
 
           {/* SVG */}
-          <div className="px-4">
-            <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full" style={{ minHeight: isAgentic ? 330 : 360 }}>
+          <div className="px-5">
+            <svg viewBox={`0 0 ${svgW} ${svgH}`} className="w-full" style={{ minHeight: isAgentic ? 360 : 360 }}>
               <defs>
                 <marker id="arr" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
                   <path d="M0,0 L7,2.5 L0,5z" fill="#CBD5E1" />
@@ -445,41 +485,48 @@
               {/* Zone backgrounds */}
               {zones.map((z, i) => (
                 <g key={i}>
-                  <rect x={z.x} y="22" width={z.w} height={svgH - 30} rx="10"
+                  <rect x={z.x} y="28" width={z.w} height={svgH - 38} rx="12"
                         fill={z.color || '#F8FAFC'} stroke={z.border || '#E2E8F0'}
-                        strokeWidth={isAgentic ? 1.5 : 1}
-                        opacity={isAgentic ? 0.75 : 0.25} />
-                  <text x={z.x + z.w / 2} y="42" textAnchor="middle"
-                        fontSize={isAgentic ? '11.5' : '10.5'}
-                        fill="#334155" fontWeight="700">{z.label}</text>
-                  {z.desc && <text x={z.x + z.w / 2} y="56" textAnchor="middle" fontSize="9.5" fill="#94A3B8" fontStyle="italic">{z.desc}</text>}
+                        strokeWidth={isAgentic ? 1 : 1}
+                        opacity={isAgentic ? 0.6 : 0.25} />
+                  <text x={z.x + z.w / 2} y="50" textAnchor="middle"
+                        fontSize={isAgentic ? '12' : '10.5'}
+                        fill="#334155" fontWeight="700" letterSpacing="0.3">{z.label}</text>
+                  {z.desc && (
+                    <text x={z.x + z.w / 2} y="64" textAnchor="middle" fontSize="9" fill="#8492A6" fontStyle="italic" letterSpacing="0.2">{z.desc}</text>
+                  )}
                 </g>
               ))}
 
               {/* Go-live boundary */}
               {isAgentic && (
                 <g>
-                  <line x1="595" y1="27" x2="595" y2={svgH - 14} stroke="#64748B" strokeWidth="1.5" strokeDasharray="6 4" opacity="0.4" />
-                  <rect x="561" y={(lyAg.judgment + lyAg.agents) / 2 - 10} width="68" height="20" rx="4" fill="#475569" opacity="0.9" />
-                  <text x="595" y={(lyAg.judgment + lyAg.agents) / 2 + 4} textAnchor="middle" fontSize="8" fill="white" fontWeight="700" letterSpacing="0.5">GO-LIVE</text>
+                  <line x1="600" y1="33" x2="600" y2={svgH - 16} stroke="#64748B" strokeWidth="1" strokeDasharray="6 4" opacity="0.3" />
+                  <rect x="568" y={(lyAg.judgment + lyAg.agents) / 2 - 12} width="64" height="24" rx="5" fill="#475569" />
+                  <text x="600" y={(lyAg.judgment + lyAg.agents) / 2 + 3} textAnchor="middle" fontSize="8.5" fill="white" fontWeight="700" letterSpacing="0.8">GO-LIVE</text>
                 </g>
               )}
 
               {/* Layer labels */}
               {isAgentic ? (
                 <g>
-                  <text x="12" y={lyAg.judgment - 2} fontSize="9.5" fill="#7C3AED" fontWeight="600" opacity="0.7">Human</text>
-                  <text x="12" y={lyAg.judgment + 9} fontSize="9.5" fill="#7C3AED" fontWeight="600" opacity="0.7">Judgment</text>
-                  <text x="12" y={lyAg.judgment + 20} fontSize="7.5" fill="#7C3AED" opacity="0.45" fontStyle="italic">strategy &#8211; policy</text>
-                  <line x1="60" y1={lyAg.judgment} x2={svgW - 20} y2={lyAg.judgment} stroke="#7C3AED" strokeWidth="0.5" opacity="0.08" />
+                  {/* Human Judgment layer */}
+                  <text x="14" y={lyAg.judgment - 8} fontSize="9" fill="#7C3AED" fontWeight="700" opacity="0.55" letterSpacing="0.5">HUMAN</text>
+                  <text x="14" y={lyAg.judgment + 3} fontSize="9" fill="#7C3AED" fontWeight="700" opacity="0.55" letterSpacing="0.5">JUDGMENT</text>
+                  <text x="14" y={lyAg.judgment + 16} fontSize="7" fill="#7C3AED" opacity="0.35" fontStyle="italic">strategy &middot; policy</text>
 
-                  <text x="12" y={lyAg.agents - 2} fontSize="9.5" fill="#8B7355" fontWeight="600" opacity="0.7">Agent</text>
-                  <text x="12" y={lyAg.agents + 9} fontSize="9.5" fill="#8B7355" fontWeight="600" opacity="0.7">Execution</text>
-                  <text x="12" y={lyAg.agents + 20} fontSize="7.5" fill="#8B7355" opacity="0.45" fontStyle="italic">minutes &#8211; continuous</text>
-                  <line x1="60" y1={lyAg.agents} x2={svgW - 20} y2={lyAg.agents} stroke="#8B7355" strokeWidth="0.5" opacity="0.08" />
+                  {/* Agent Execution layer */}
+                  <text x="14" y={lyAg.agents - 8} fontSize="9" fill="#8B7355" fontWeight="700" opacity="0.55" letterSpacing="0.5">AGENT</text>
+                  <text x="14" y={lyAg.agents + 3} fontSize="9" fill="#8B7355" fontWeight="700" opacity="0.55" letterSpacing="0.5">EXECUTION</text>
+                  <text x="14" y={lyAg.agents + 16} fontSize="7" fill="#8B7355" opacity="0.35" fontStyle="italic">minutes &middot; continuous</text>
 
-                  <text x="12" y={lyAg.customer + 4} fontSize="9.5" fill="#0D9488" fontWeight="600" opacity="0.7">Customer</text>
-                  <line x1="60" y1={lyAg.customer} x2={svgW - 20} y2={lyAg.customer} stroke="#0D9488" strokeWidth="0.5" opacity="0.08" />
+                  {/* Customer layer */}
+                  <text x="14" y={lyAg.customer + 4} fontSize="9" fill="#0D9488" fontWeight="700" opacity="0.55" letterSpacing="0.5">CUSTOMER</text>
+
+                  {/* Subtle grid lines */}
+                  <line x1="75" y1={lyAg.judgment} x2={svgW - 15} y2={lyAg.judgment} stroke="#7C3AED" strokeWidth="0.3" opacity="0.08" />
+                  <line x1="75" y1={lyAg.agents} x2={svgW - 15} y2={lyAg.agents} stroke="#8B7355" strokeWidth="0.3" opacity="0.08" />
+                  <line x1="75" y1={lyAg.customer} x2={svgW - 15} y2={lyAg.customer} stroke="#0D9488" strokeWidth="0.3" opacity="0.08" />
                 </g>
               ) : (
                 <g>
@@ -497,7 +544,7 @@
                 </g>
               )}
 
-              {/* Connections (render before nodes) */}
+              {/* Connections (render before nodes so nodes are on top) */}
               {curConns.map((c, i) => <Conn key={`${c.from}-${c.to}-${i}`} c={c} i={i} />)}
 
               {/* Persona nodes */}
@@ -509,30 +556,39 @@
           </div>
 
           {/* Legend */}
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-1 text-xs text-gray-400 mt-1 px-4">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-1.5 text-xs mt-2 px-5">
             {!isAgentic && <>
-              <span className="flex items-center gap-1.5"><span className="inline-block w-4 h-px bg-gray-300"></span> Handoff</span>
-              <span className="flex items-center gap-1.5"><span className="inline-block w-4 bg-red-400" style={{height:2}}></span> Friction</span>
+              <span className="flex items-center gap-1.5 text-gray-400"><span className="inline-block w-5 h-px bg-gray-300"></span> Handoff</span>
+              <span className="flex items-center gap-1.5 text-gray-400"><span className="inline-block w-5 bg-red-400" style={{height:2}}></span> Friction</span>
             </>}
             {isAgentic && <>
-              <span className="flex items-center gap-1.5"><span className="inline-block w-5 border-t-2" style={{borderColor:'#A38B5E'}}></span> Agent flow</span>
-              <span className="flex items-center gap-1.5"><span className="inline-block w-5 border-t-2 border-purple-500"></span> Active direction</span>
-              <span className="flex items-center gap-1.5">
-                <span className="inline-block w-1 h-3 rounded-sm bg-teal-600 opacity-70 mr-0.5"></span>
-                <span className="inline-block w-3 h-3 rounded-sm border" style={{background:'#FAFAF8', borderColor:'#B8A88A'}}></span> Policy-governed
+              <span className="flex items-center gap-1.5 text-stone-500">
+                <span className="inline-block w-5 border-t-2" style={{borderColor:'#A38B5E'}}></span>
+                <span className="font-medium">Agent flow</span>
               </span>
-              <span className="flex items-center gap-1.5 text-gray-300">Hover humans to see: policy &middot; conditional review</span>
+              <span className="flex items-center gap-1.5 text-purple-600">
+                <span className="inline-block w-5 border-t-2 border-purple-500"></span>
+                <span className="font-medium">Active direction</span>
+              </span>
+              <span className="flex items-center gap-2 text-stone-500">
+                <span className="flex items-center gap-0.5">
+                  <span className="inline-block w-1 h-3.5 rounded-sm bg-teal-600 opacity-60"></span>
+                  <span className="inline-block w-4 h-3.5 rounded" style={{background:'#FAFAF8', border:'1px solid #C4B697'}}></span>
+                </span>
+                <span className="font-medium">Policy-governed</span>
+              </span>
+              <span className="text-gray-300 ml-1">Hover personas to reveal: policy connections &middot; conditional review</span>
             </>}
           </div>
 
           {/* Summary card */}
-          <div className="px-4 mt-5">
+          <div className="px-5 mt-5">
             {!isAgentic ? (
               <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-100">
-                <div className="text-xs font-semibold text-gray-500 mb-1">
+                <div className="text-xs font-semibold text-gray-500 mb-1.5 tracking-wide">
                   {mode === 'slg' ? '4 phases, 6 personas, sequential handoffs' : '4 phases, 5 personas \u2014 Oliver disappears in PLG'}
                 </div>
-                <div className="text-sm text-gray-600">
+                <div className="text-sm text-gray-600 leading-relaxed">
                   {mode === 'slg'
                     ? 'A pricing change passes through Strategy \u2192 Implement \u2192 Test \u2192 Roll Out. Different people own different phases. Friction concentrates at the Emily \u2192 Oliver handoff (invisible upstream constraints) and at month-end close (Fred discovers errors last).'
                     : 'Without an ops intermediary, Emily\u2019s implementation goes directly to Caroline. But most customers run both motions \u2014 the same objects serve SLG and PLG simultaneously.'
@@ -541,8 +597,8 @@
               </div>
             ) : (
               <div className="bg-stone-50 rounded-lg p-4 shadow-sm border border-stone-200">
-                <div className="text-xs font-semibold text-stone-600 mb-1">2 modes, 3 types of human judgment (4 people), 5 agents organized by blast radius</div>
-                <div className="text-sm text-gray-700">
+                <div className="text-xs font-semibold text-stone-600 mb-1.5 tracking-wide">2 modes, 3 types of human judgment (4 people), 5 agents organized by blast radius</div>
+                <div className="text-sm text-stone-700 leading-relaxed">
                   Strategy, implementation, and testing merge into a single iterative loop (<strong>Design &amp; Validate</strong>). Peter describes intent, agents implement and simulate, humans evaluate. The go-live decision is the one human gate. Then agents handle ongoing operations (<strong>Operate &amp; Monitor</strong>) &mdash; contract configuration, invoicing, continuous reconciliation. The coordination seams transform from visibility gaps to specification gaps.
                 </div>
               </div>
@@ -551,19 +607,20 @@
 
           {/* Seam transformations (agentic only) */}
           {isAgentic && (
-            <div className="px-4 mt-4">
-              <div className="text-xs font-medium text-gray-400 mb-2">Coordination seams: hover for detail</div>
+            <div className="px-5 mt-5">
+              <div className="text-xs font-semibold text-gray-400 mb-2.5 tracking-wide uppercase" style={{fontSize: '10px', letterSpacing: '0.08em'}}>Coordination seams</div>
               <div className="flex gap-3">
                 {seams.map(s => (
                   <div key={s.id}
-                       className="flex-1 bg-white rounded-lg border border-gray-100 p-3 transition-all hover:shadow-md cursor-default relative"
+                       className="flex-1 bg-white rounded-lg border border-gray-150 p-3.5 transition-all hover:shadow-md hover:border-gray-200 cursor-default relative"
+                       style={{borderColor: '#E8E8E8'}}
                        onMouseEnter={() => setHoveredSeam(s.id)}
                        onMouseLeave={() => setHoveredSeam(null)}>
-                    <div className="text-xs font-medium text-gray-500 mb-1">{s.label}</div>
-                    <div className="text-xs text-gray-600 line-through decoration-gray-400 decoration-2">{s.was}</div>
-                    <div className="text-xs font-semibold text-indigo-600 mt-1">{s.now}</div>
+                    <div className="text-xs font-semibold text-gray-500 mb-1.5">{s.label}</div>
+                    <div className="text-xs text-gray-400 line-through decoration-gray-300 decoration-1">{s.was}</div>
+                    <div className="text-xs font-semibold text-indigo-600 mt-1.5 leading-snug">{s.now}</div>
                     {hoveredSeam === s.id && (
-                      <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg p-3 shadow-lg z-10 fade-in">
+                      <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-gray-200 rounded-lg p-3.5 shadow-lg z-10 fade-in">
                         <div className="text-xs text-gray-600 leading-relaxed">{s.detail}</div>
                       </div>
                     )}
@@ -574,9 +631,9 @@
           )}
 
           {/* Footer */}
-          <div className="px-4 mt-6 pt-3 border-t border-gray-100">
-            <p className="text-xs text-gray-400">
-              Responds to <a href="https://docs.google.com/document/d/1XnmU6Gpeef-c-01t155R52q82NCPhp4Y3zjh8ri1-jM/edit" className="text-indigo-400 hover:underline">Agentic Monetization Strategy</a> (Thread 2) &middot; Extends <a href="https://docs.google.com/document/d/1cCmLXhsy9xZeq3haC8Wi8y2wOmFkeDkOJgOP0VfoXPQ/edit" className="text-indigo-400 hover:underline">AI in Metronome UI</a>
+          <div className="px-5 mt-7 pt-3 border-t border-gray-100">
+            <p className="text-xs text-gray-350" style={{color: '#B0B8C4'}}>
+              Responds to <a href="https://docs.google.com/document/d/1XnmU6Gpeef-c-01t155R52q82NCPhp4Y3zjh8ri1-jM/edit" className="text-indigo-300 hover:text-indigo-400 hover:underline transition-colors">Agentic Monetization Strategy</a> (Thread 2) &middot; Extends <a href="https://docs.google.com/document/d/1cCmLXhsy9xZeq3haC8Wi8y2wOmFkeDkOJgOP0VfoXPQ/edit" className="text-indigo-300 hover:text-indigo-400 hover:underline transition-colors">AI in Metronome UI</a>
             </p>
           </div>
         </div>
